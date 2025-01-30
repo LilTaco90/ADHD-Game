@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Match</title>
+  <style>
+    #game-area {
+      width: 500px;
+      height: 500px;
+      border: 2px solid black;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+    .game-card {
+      width: 80px;
+      height: 80px;
+      margin: 5px;
+      background-color: gray;
+      display: inline-block;
+      cursor: pointer;
+      text-align: center;
+      line-height: 80px;
+      font-size: 24px;
+      font-weight: bold;
+      color: transparent;
+      border: 2px solid black;
+    }
+    .matched {
+      background-color: lightgreen;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <button id="start-button">Start Game</button>
+  <div id="score-display">Score: 0</div>
+  <div id="timer-display">Time Left: 45s</div>
+  <div id="game-area"></div>
+  <script>
+    const startButton = document.getElementById('start-button');
+    const gameArea = document.getElementById('game-area');
+    const scoreDisplay = document.getElementById('score-display');
+    const timerDisplay = document.getElementById('timer-display');
+
+    let score = 0;
+    let selectedCards = [];
+    let matchedPairs = 0;
+    let timer;
+    let timeLeft = 45;
+
+    function startMemoryMatch() {
+      // Reset the game
+      gameArea.innerHTML = '';
+      score = 0;
+      selectedCards = [];
+      matchedPairs = 0;
+      timeLeft = 45;
+      scoreDisplay.textContent = `Score: ${score}`;
+      timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+
+      // Create shuffled cards
+      const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange']; // 6 unique colors
+      const shuffledColors = [...colors, ...colors].sort(() => Math.random() - 0.5); // 12 cards total
+
+      shuffledColors.forEach((color) => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.dataset.color = color;
+
+        gameArea.appendChild(card);
+
+        card.addEventListener('click', () => {
+          // Prevent clicking matched cards or re-clicking the same card
+          if (card.classList.contains('matched') || selectedCards.includes(card)) {
+            return;
+          }
+
+          // Reveal the card
+          card.style.backgroundColor = color;
+          card.textContent = '★'; // Optional: Visual feedback for flipping
+          selectedCards.push(card);
+
+          // Check for a match when two cards are selected
+          if (selectedCards.length === 2) {
+            const [firstCard, secondCard] = selectedCards;
+
+            if (firstCard.dataset.color === secondCard.dataset.color) {
+              // Match found
+              firstCard.classList.add('matched');
+              secondCard.classList.add('matched');
+              selectedCards = [];
+              score += 2;
+              matchedPairs++;
+
+              // Check if the game is completed
+              if (matchedPairs === colors.length) {
+                clearInterval(timer);
+                alert('Congratulations! You matched all pairs in time!');
+              }
+            } else {
+              // No match, flip the cards back after a short delay
+              setTimeout(() => {
+                firstCard.style.backgroundColor = 'gray';
+                firstCard.textContent = '';
+                secondCard.style.backgroundColor = 'gray';
+                secondCard.textContent = '';
+                selectedCards = [];
+              }, 500);
+
+              score--;
+            }
+
+            scoreDisplay.textContent = `Score: ${score}`;
+          }
+        });
+      });
+
+      // Start the timer
+      startTimer();
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time Left: ${timeLeft}s`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          alert('Time is up! You ran out of time. Try again!');
+          gameArea.innerHTML = ''; // Clear the game area
+        }
+      }, 1000);
+    }
+
+    startButton.addEventListener('click', startMemoryMatch);
+  </script>
+</body>
+</html>
