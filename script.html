@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impulse Breaker</title>
+  <style>
+    #game-area {
+      width: 500px;
+      height: 500px;
+      border: 2px solid black;
+      position: relative;
+      overflow: hidden;
+    }
+    .game-target {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="start-button">Start Game</button>
+  <div id="score-display">Score: 0</div>
+  <div id="game-area"></div>
+  <script>
+    const startButton = document.getElementById('start-button');
+    const gameArea = document.getElementById('game-area');
+    const scoreDisplay = document.getElementById('score-display');
+
+    let score = 0;
+    let timer;
+
+    function getRandomPosition(maxWidth, maxHeight) {
+      return {
+        x: Math.random() * (maxWidth - 30),
+        y: Math.random() * (maxHeight - 30),
+      };
+    }
+
+    function getRandomColor() {
+      return `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+    }
+
+    function startImpulseBreaker() {
+      gameArea.innerHTML = '';
+      score = 0;
+      scoreDisplay.textContent = `Score: ${score}`;
+
+      function spawnTarget() {
+        const target = document.createElement('div');
+        target.className = 'game-target';
+        target.style.backgroundColor = getRandomColor();
+        const position = getRandomPosition(gameArea.offsetWidth, gameArea.offsetHeight);
+        target.style.left = `${position.x}px`;
+        target.style.top = `${position.y}px`;
+        gameArea.appendChild(target);
+
+        target.addEventListener('click', () => {
+          if (target.style.backgroundColor === 'blue') {
+            score++;
+            target.remove();
+          } else {
+            score--;
+          }
+          scoreDisplay.textContent = `Score: ${score}`;
+        });
+
+        setTimeout(() => {
+          if (target.parentElement) target.remove();
+        }, 1000);
+      }
+
+      timer = setInterval(spawnTarget, 800);
+      setTimeout(() => clearInterval(timer), 30000); // 30 seconds game
+    }
+
+    startButton.addEventListener('click', startImpulseBreaker);
+  </script>
+</body>
+</html>
